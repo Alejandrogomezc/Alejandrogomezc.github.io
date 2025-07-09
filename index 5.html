@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>El Desafío de la Ilustración</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2 { font-family: 'Playfair Display', serif; }
+
+        /* Animaciones de fondo */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .animate-pulse-slow {
+            animation: pulse 6s infinite ease-in-out;
+        }
+
+        /* Estilos personalizados para los botones de opción */
+        .option-button {
+            background-color: #6366f1; /* Indigo 500 */
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            text-align: center;
+        }
+        .option-button:hover {
+            background-color: #4f46e5; /* Indigo 600 */
+            transform: translateY(-3px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+        .option-button:active {
+            background-color: #4338ca; /* Indigo 700 */
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .option-button.correct {
+            background-color: #22c55e; /* Green 500 */
+        }
+        .option-button.correct:hover {
+            background-color: #16a34a; /* Green 600 */
+        }
+        .option-button.wrong {
+            background-color: #ef4444; /* Red 500 */
+        }
+        .option-button.wrong:hover {
+            background-color: #dc2626; /* Red 600 */
+        }
+
+        /* Estilos personalizados para el área de feedback */
+        .feedback-area {
+            min-height: 80px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease-out; /* Transición para la aparición */
+        }
+        .feedback-correct {
+            background-color: #dcfce7; /* Green 100 */
+            color: #16a34a; /* Green 600 */
+            border: 1px solid #22c55e; /* Green 500 */
+        }
+        .feedback-wrong {
+            background-color: #fee2e2; /* Red 100 */
+            color: #dc2626; /* Red 600 */
+            border: 1px solid #ef4444; /* Red 500 */
+        }
+
+        /* Animación para el texto de la pregunta */
+        .question-text.fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Estilo para la caja de mensajes */
+        .message-box {
+            background-color: #ffffff;
+            border: 2px solid #a78bfa; /* Purple 400 */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            padding: 25px;
+            border-radius: 15px;
+            z-index: 1000;
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+        .message-box h3 {
+            color: #6b21a8; /* Purple 800 */
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        .message-box p {
+            color: #4a5568; /* Gray 700 */
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+        }
+        .message-box button {
+            background-color: #8b5cf6; /* Violet 500 */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .message-box button:hover {
+            background-color: #7c3aed; /* Violet 600 */
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="relative min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex items-center justify-center p-6 overflow-hidden">
+
+    <!-- DECORACIÓN DE FONDO -->
+    <div class="absolute inset-0 -z-10 pointer-events-none">
+        <div class="absolute top-[-6rem] left-[-6rem] w-[30rem] h-[30rem] bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse-slow"></div>
+        <div class="absolute bottom-[-8rem] right-[-8rem] w-[40rem] h-[40rem] bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse-slow delay-500"></div>
+        <div class="absolute top-[50%] left-[50%] w-[20rem] h-[20rem] bg-indigo-200 rounded-full mix-blend-multiply filter blur-2xl opacity-40 -translate-x-1/2 -translate-y-1/2 animate-pulse-slow delay-1000"></div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="bg-white/80 backdrop-blur-2xl border-4 border-purple-300 rounded-3xl shadow-2xl p-8 max-w-4xl w-full text-center space-y-6">
+        
+        <h1 class="text-5xl font-bold text-purple-800 drop-shadow-lg">El Desafío de la Ilustración</h1>
+
+        <!-- INTRO -->
+        <div id="introScreen" class="space-y-6">
+            <img src="https://img.icons8.com/ios-filled/100/8e44ad/open-book.png" class="mx-auto animate-bounce" alt="Libro ilustración"/>
+            <p class="text-xl text-gray-700">¡Bienvenido al "Desafío de la Ilustración"! Este juego te retará a pensar críticamente sobre los conceptos de la Ilustración, el Renacimiento y el Humanismo, basándote en los textos de Kant, Foucault y Restrepo.</p>
+            <p class="text-xl text-gray-700">Tu objetivo es responder correctamente a las preguntas y tomar decisiones que reflejen una comprensión profunda de estos movimientos filosóficos e históricos. <span class="text-purple-700 font-semibold">¡Prepárate para desafiar tu razón y tu conocimiento!</span></p>
+            <button id="startButton" class="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition duration-300">Comenzar Juego</button>
+        </div>
+
+        <!-- JUEGO -->
+        <div id="gameScreen" class="hidden space-y-6">
+            <div class="bg-gradient-to-br from-purple-100 to-pink-100 p-6 rounded-2xl shadow-inner">
+                <p id="questionText" class="text-2xl font-semibold text-purple-900 mb-2"></p>
+                <div id="scenarioDescription" class="text-purple-800 text-lg mt-2"></div>
+            </div>
+            <div id="optionsContainer" class="grid gap-4"></div>
+            <div id="feedbackArea" class="hidden font-semibold p-4 rounded-xl transition-all duration-300"></div>
+            <button id="nextButton" class="hidden bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition duration-300">Siguiente</button>
+            <div id="scoreArea" class="text-xl font-bold text-purple-800">Puntuación: 0</div>
+        </div>
+
+        <!-- FIN -->
+        <div id="endScreen" class="hidden space-y-4">
+            <h2 class="text-4xl font-bold text-pink-700 drop-shadow-lg">¡Juego Terminado!</h2>
+            <p id="finalScoreText" class="text-2xl font-semibold text-purple-800"></p>
+            <p id="finalMessage" class="text-gray-700 text-lg"></p>
+            <button id="restartButton" class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition duration-300">Jugar de Nuevo</button>
+        </div>
+
+    </div>
+
+    <!-- Message Box for alerts -->
+    <div id="messageBox" class="message-box">
+        <h3 id="messageBoxTitle"></h3>
+        <p id="messageBoxContent"></p>
+        <button id="messageBoxCloseButton">Cerrar</button>
+    </div>
+
+    <script>
+        // Función para mostrar un mensaje personalizado en lugar de alert()
+        function showMessage(title, content) {
+            const messageBox = document.getElementById('messageBox');
+            document.getElementById('messageBoxTitle').innerText = title;
+            document.getElementById('messageBoxContent').innerText = content;
+            messageBox.style.display = 'block';
+        }
+
+        // Event listener para cerrar el mensaje
+        document.getElementById('messageBoxCloseButton').addEventListener('click', () => {
+            document.getElementById('messageBox').style.display = 'none';
+        });
+
+        // Definición de las preguntas y escenarios del juego
+        const gameData = [
+            {
+                type: 'quiz',
+                question: "¿Cuál es el lema de la Ilustración según Kant y qué significa?",
+                options: [
+                    { text: "Carpe Diem: Vive el momento", isCorrect: false, feedback: "Incorrecto. 'Carpe Diem' es una frase latina que significa 'aprovecha el día', asociada a Epicuro, no a la Ilustración de Kant." },
+                    { text: "Cogito, ergo sum: Pienso, luego existo", isCorrect: false, feedback: "Incorrecto. Esta frase es de Descartes y se refiere a la certeza de la propia existencia a través del pensamiento." },
+                    { text: "Sapere aude: ¡Ten el valor de servirte de tu propia razón!", isCorrect: true, feedback: "¡Correcto! Kant propone 'Sapere aude' como el lema de la Ilustración, invitando a la autonomía del pensamiento." },
+                    { text: "E pluribus unum: De muchos, uno", isCorrect: false, feedback: "Incorrecto. Esta frase es el lema de Estados Unidos y se refiere a la unidad de muchas partes." }
+                ],
+                textReference: "Kant, '¿Qué es la Ilustración?', página 1: '¡Sapere aude! ¡Ten el valor de servirse de tu propia razón!: he aquí el lema de la ilustración.'"
+            },
+            {
+                type: 'scenario',
+                scenario: "Imagina que eres un ciudadano del siglo XVIII. Las autoridades religiosas te exigen que aceptes una doctrina sin cuestionarla. ¿Cómo aplicarías el concepto kantiano de 'uso público de la razón'?",
+                options: [
+                    { text: "Aceptar la doctrina sin objeciones para mantener la paz social.", isCorrect: false, feedback: "Según Kant, el uso privado de la razón implica obediencia en el rol de funcionario, pero el uso público permite la crítica." },
+                    { text: "Criticar la doctrina públicamente, escribiendo y debatiendo, pero cumpliendo tus deberes como ciudadano.", isCorrect: true, feedback: "¡Correcto! Kant distingue entre el uso privado (obediencia en el rol de funcionario) y el uso público (libertad de expresión como erudito ante el público)." },
+                    { text: "Rebelarte contra la autoridad y negarte a cumplir cualquier deber.", isCorrect: false, feedback: "Incorrecto. Kant no aboga por la desobediencia civil, sino por la crítica racional dentro de un marco de orden." },
+                    { text: "Guardar tus dudas para ti mismo y no compartirlas con nadie.", isCorrect: false, feedback: "Incorrecto. Esto sería permanecer en la 'minoría de edad' por cobardía, según Kant." }
+                ],
+                textReference: "Kant, '¿Qué es la Ilustración?', página 2: 'Para esta ilustración no se requiere más que una cosa, libertad; y la más inocente entre todas las que llevan ese nombre, a saber: libertad de hacer uso público de su razón íntegramente.' y página 3: 'Pero en la medida en que esta parte de la máquina se considera como miembro de un ser común total y hasta de la sociedad cosmopolita de los hombres, por lo tanto, en calidad de maestro que se dirige a un público por escrito haciendo uso de su razón, puede razonar sin que por ello padezcan los negocios en los que corresponde, en parte, la consideración de miembro pasivo.'"
+            },
+            {
+                type: 'quiz',
+                question: "¿Cómo describe Foucault la modernidad en relación con la Ilustración?",
+                options: [
+                    { text: "Como una continuación directa y sin cambios de los principios de la Ilustración.", isCorrect: false, feedback: "Foucault ve la modernidad más como una actitud que como una simple continuación." },
+                    { text: "Como una época histórica que ha terminado, dando paso a la posmodernidad.", isCorrect: false, feedback: "Foucault propone ver la modernidad como una actitud, no solo como un período cronológico." },
+                    { text: "Como una actitud filosófica que implica una crítica permanente de nuestro ser histórico.", isCorrect: true, feedback: "¡Correcto! Foucault la concibe como un 'ethos', una actitud crítica y experimental hacia el presente." },
+                    { text: "Como un rechazo total de la racionalidad y los valores de la Ilustración.", isCorrect: false, feedback: "Foucault rechaza el 'chantaje' de estar 'a favor o en contra' de la Ilustración, proponiendo un análisis crítico." }
+                ],
+                textReference: "Foucault, '¿Qué es la Ilustración?', página 4: 'Al referirme al texto de Kant me pregunto si no se puede contemplar la modernidad más como una actitud que como un período de la historia.' y página 6: 'el hilo que puede unirnos de esta manera a la Aufklärung no es la fidelidad a unos elementos de doctrina, sino más bien de reactivación permanente de una actitud, es decir, de un ethos filosófico que se podría caracterizar como crítica permanente de nuestro ser histórico.'"
+            },
+            {
+                type: 'scenario',
+                scenario: "Un artista del Renacimiento te pide consejo sobre cómo representar la figura humana en su obra. ¿Qué le sugerirías, basándote en el espíritu del Renacimiento y el humanismo?",
+                options: [
+                    { text: "Que se enfoque en la divinidad y la trascendencia, minimizando la forma física.", isCorrect: false, feedback: "Incorrecto. El Renacimiento exaltó la figura humana y su perfección física." },
+                    { text: "Que represente al hombre como centro de la creación, con proporciones perfectas y fuerza contenida.", isCorrect: true, feedback: "¡Correcto! El David de Miguel Ángel y Donatello son ejemplos de esta exaltación del hombre." },
+                    { text: "Que utilice símbolos abstractos para evitar la representación directa del cuerpo.", isCorrect: false, feedback: "Incorrecto. El Renacimiento se caracterizó por una representación realista y idealizada del cuerpo humano." },
+                    { text: "Que siga estrictamente las normas artísticas de la Edad Media.", isCorrect: false, feedback: "Incorrecto. El Renacimiento marcó una ruptura con la estética medieval, recuperando elementos clásicos." }
+                ],
+                textReference: "Restrepo, 'Renacimientos y Humanismos', página 1: 'este David, de Miguel Ángel, se convirtió en símbolo y expresión del espíritu del Renacimiento, cuando, según la expresión de Friederich 'sólo importa el hombre. Sólo en él se había roto el anillo de la creación y sólo en él podía volver a cerrarse'.' y 'Donatello extrajo de sus hornos de fundición otra imagen de David adolescente de parecidas características, de exaltación y loa del cuerpo humano, armonioso, fuerte y de proporciones perfectas.'"
+            },
+            {
+                type: 'quiz',
+                question: "¿Qué significa el concepto de 'hombre posible' en el contexto del humanismo contemporáneo, según Javier Darío Restrepo?",
+                options: [
+                    { text: "Que el hombre está limitado por su destino y no puede cambiar.", isCorrect: false, feedback: "Incorrecto. El 'hombre posible' implica una capacidad de superación y construcción constante." },
+                    { text: "Que el hombre es una obra acabada y definitiva desde su nacimiento.", isCorrect: false, feedback: "Incorrecto. El humanismo contemporáneo ve al hombre como un proyecto en construcción." },
+                    { text: "Que el hombre no es solo lo que es, sino lo que puede llegar a ser, un proyecto en permanente construcción.", isCorrect: true, feedback: "¡Correcto! Se refiere a la capacidad del ser humano de trascender sus límites y construirse a sí mismo." },
+                    { text: "Que la realidad es suficiente y no hay necesidad de buscar más allá.", isCorrect: false, feedback: "Incorrecto. La idea del 'hombre posible' implica una insatisfacción con lo dado y una búsqueda constante." }
+                ],
+                textReference: "Restrepo, 'Renacimientos y Humanismos', página 5: 'Hay, pues, un elemento que distingue el humanismo que se está construyendo en nuestro tiempo: el hombre no es sólo lo que es, es lo que puede ser; estamos en la era del hombre posible.' y 'al ser humano se le está mirando como proyecto, como obra en permanente construcción; el presente adquiere una dinámica imparable porque está en movimiento hacia el futuro.'"
+            },
+            {
+                type: 'scenario',
+                scenario: "Como estudiante, te enfrentas a un problema complejo que requiere una solución innovadora. ¿Cómo aplicarías la 'actitud experimental' de Foucault en tu enfoque?",
+                options: [
+                    { text: "Buscar una solución global y radical que cambie todo el sistema.", isCorrect: false, feedback: "Foucault advierte contra los proyectos globales, prefiriendo transformaciones precisas y locales." },
+                    { text: "Realizar una investigación histórica precisa de los límites del problema y probar soluciones parciales en la realidad.", isCorrect: true, feedback: "¡Correcto! La actitud experimental de Foucault implica un trabajo sobre los límites y la prueba en prácticas concretas." },
+                    { text: "Aceptar el problema como algo inmutable y no intentar cambiarlo.", isCorrect: false, feedback: "Incorrecto. La actitud experimental busca la superación de los límites." },
+                    { text: "Esperar a que otros resuelvan el problema sin tu intervención.", isCorrect: false, feedback: "Incorrecto. La actitud experimental es un trabajo activo sobre uno mismo y la realidad." }
+                ],
+                textReference: "Foucault, '¿Qué es la Ilustración?', página 7: 'Quiero decir que ese trabajo, hecho en nuestros propios límites, debe, al mismo tiempo, abrir un conjunto de investigaciones y ponerse a prueba con la realidad y con la actualidad, para comprender los puntos en los cuales el cambio es posible y deseable, y para determinar la forma precisa que se debe dar a dicho cambio. Es decir, que esta ontología histórica de nosotros mismos debe dar la espalda a todos esos proyectos que pretenden ser globales y radicales.'"
+            },
+            {
+                type: 'quiz',
+                question: "Según Kant, ¿cuál es la principal causa de la 'incapacidad culpable' del hombre en la Ilustración?",
+                options: [
+                    { text: "Falta de inteligencia natural.", isCorrect: false, feedback: "Incorrecto. Kant afirma que la causa no reside en la falta de inteligencia." },
+                    { text: "Pereza y cobardía para servirse de la propia razón.", isCorrect: true, feedback: "¡Correcto! Kant señala la pereza y la cobardía como las principales razones por las que los hombres permanecen en su estado de pupilo." },
+                    { text: "Falta de educación formal.", isCorrect: false, feedback: "Incorrecto. Aunque la educación es importante, Kant se enfoca en la voluntad y el valor individual." },
+                    { text: "Opresión económica o política.", isCorrect: false, feedback: "Incorrecto. Aunque son obstáculos, la incapacidad culpable es interna, no externa." }
+                ],
+                textReference: "Kant, '¿Qué es la Ilustración?', página 1: 'Esta incapacidad es culpable porque su causa no reside en la falta de inteligencia sino de decisión y valor para servirse por sí mismo de ella sin la tutela de otro. ¡Sapere aude! ¡Ten el valor de servirte de tu propia razón!: he aquí el lema de la ilustración. La pereza y la cobardía son causa de que una gran parte de los hombres continúe a gusto en su estado de pupilo...'"
+            },
+            {
+                type: 'scenario',
+                scenario: "Eres un clérigo en la época de la Ilustración. Tu Iglesia tiene un credo establecido, pero tú has desarrollado ideas reformistas. ¿Cómo actuarías según Kant para contribuir a la Ilustración sin faltar a tu deber?",
+                options: [
+                    { text: "Renunciar a tu cargo inmediatamente para predicar tus nuevas ideas libremente.", isCorrect: false, feedback: "Incorrecto. Kant sugiere que la renuncia es una opción si el credo contradice la conciencia, pero no es la única vía para la ilustración." },
+                    { text: "Enseñar el credo de la Iglesia en tu función ministerial, pero publicar tus ideas reformistas como doctor ante el público.", isCorrect: true, feedback: "¡Correcto! Kant distingue el uso privado (deber ministerial) del uso público de la razón (libertad de expresión como erudito)." },
+                    { text: "Intentar cambiar el credo de la Iglesia desde dentro, sin informar al público.", isCorrect: false, feedback: "Incorrecto. La ilustración, para Kant, implica la difusión pública de la razón." },
+                    { text: "Predicar tus ideas reformistas en el púlpito, desafiando directamente la doctrina establecida.", isCorrect: false, feedback: "Incorrecto. Esto sería un uso 'privado' de la razón en un contexto 'público' que Kant desaconseja por perturbar el orden." }
+                ],
+                textReference: "Kant, '¿Qué es la Ilustración?', página 3: 'Del mismo modo, el clérigo está obligado a enseñar la doctrina con arreglo al credo de la Iglesia a que sirve, pues fue aceptado con esa condición. Pero como doctor tiene la plena libertad y hasta el deber de comunicar al público sus ideas bien probadas e intencionadas acerca de las deficiencias que encuentra en aquel credo, así como el de dar a conocer sus propuestas de reforma de la religión y de la Iglesia.'"
+            },
+            {
+                type: 'quiz',
+                question: "¿Qué papel jugaron los artistas, como Miguel Ángel y Donatello, en el humanismo renacentista?",
+                options: [
+                    { text: "Se enfocaron exclusivamente en temas religiosos, sin interés en la figura humana.", isCorrect: false, feedback: "Incorrecto. Aunque trabajaron temas religiosos, exaltaron la figura humana." },
+                    { text: "Aportaron la mayor parte del humanismo renacentista al exaltar la figura humana y situarla en el centro de la creación.", isCorrect: true, feedback: "¡Correcto! Sus obras como el David son símbolos de la centralidad del hombre en el Renacimiento." },
+                    { text: "Rechazaron las tradiciones clásicas griegas y romanas.", isCorrect: false, feedback: "Incorrecto. El Renacimiento revivió la estética clásica." },
+                    { text: "Se limitaron a copiar las obras de la Edad Media.", isCorrect: false, feedback: "Incorrecto. El Renacimiento buscó una nueva imagen del hombre, diferente a la medieval." }
+                ],
+                textReference: "Restrepo, 'Renacimientos y Humanismos', página 2: 'Fueron los artistas de la época los que aportaron la mayor parte del humanismo renacentista.' y 'Así como Fidias el escultor, y David, el adolescente judío, habían revivido en las manos y el genio de Miguel Ángel, el pensamiento y la estética de los griegos renacieron después de los siglos oscuros de la edad media.'"
+            },
+            {
+                type: 'quiz',
+                question: "Según Foucault, ¿por qué es importante evitar la confusión entre 'humanismo' y 'Ilustración'?",
+                options: [
+                    { text: "Porque el humanismo es un concepto más antiguo y menos relevante.", isCorrect: false, feedback: "Incorrecto. La relevancia no es la razón principal de la distinción." },
+                    { text: "Porque el humanismo es una temática inconsistente que ha servido para justificar diversas concepciones del hombre, mientras la Ilustración es una actitud crítica permanente.", isCorrect: true, feedback: "¡Correcto! Foucault critica la vaguedad del humanismo y lo opone a la actitud crítica de la Ilustración." },
+                    { text: "Porque la Ilustración es un movimiento puramente político, y el humanismo es filosófico.", isCorrect: false, feedback: "Incorrecto. Ambos tienen dimensiones filosóficas y políticas." },
+                    { text: "Porque el humanismo siempre ha sido hostil a la ciencia, a diferencia de la Ilustración.", isCorrect: false, feedback: "Incorrecto. Ha habido humanismos que apoyaron la ciencia." }
+                ],
+                textReference: "Foucault, '¿Qué es la Ilustración?', página 6: 'Por lo anterior, no debemos concluir que todo aquello que ha podido reclamarse del humanismo se deba rechazar; pero sí que la temática humanista es en sí misma demasiado ligera, demasiado diversa, demasiado inconsistente para servir de eje a la reflexión. Y es un hecho que, al menos desde el siglo XVII, aquello que se llama humanismo siempre fue obligado a apoyarse en ciertas concepciones del hombre que son prestadas de la religión, de la ciencia, de la política.'"
+            },
+            {
+                type: 'scenario',
+                scenario: "Un grupo de estudiantes debate sobre la libertad. Algunos argumentan que la libertad total es la ausencia de cualquier regla. Basándote en Kant, ¿cómo explicarías la relación entre libertad y obediencia en el contexto de la Ilustración?",
+                options: [
+                    { text: "La libertad implica la desobediencia a todas las reglas impuestas.", isCorrect: false, feedback: "Incorrecto. Kant no promueve la desobediencia total." },
+                    { text: "La libertad se limita al uso privado de la razón, mientras que en público solo hay obediencia.", isCorrect: false, feedback: "Incorrecto. Kant invierte esta idea: libertad en el uso público, obediencia en el privado (en ciertos roles)." },
+                    { text: "La libertad de razonar públicamente es compatible con la obediencia en el ámbito de las funciones específicas, siempre que el principio político sea conforme a la razón universal.", isCorrect: true, feedback: "¡Correcto! Kant propone 'obedece y podrás razonar tanto como quieras' como clave para la Ilustración." },
+                    { text: "La obediencia ciega es necesaria para la tranquilidad pública, sin espacio para la libertad.", isCorrect: false, feedback: "Incorrecto. Kant busca un equilibrio donde la libertad de razonar públicamente no perturbe el orden." }
+                ],
+                textReference: "Kant, '¿Qué es la Ilustración?', página 3: 'En este caso no cabe razonar, sino que hay que obedecer. Pero en la medida en que esta parte de la máquina se considera como miembro de un ser común total y hasta de la sociedad cosmopolita de los hombres, por lo tanto, en calidad de maestro que se dirige a un público por escrito haciendo uso de su razón, puede razonar sin que por ello padezcan los negocios en los que corresponde, en parte, la consideración de miembro pasivo.'"
+            },
+            {
+                type: 'quiz',
+                question: "¿Cuál de las siguientes afirmaciones refleja mejor la visión de Foucault sobre la crítica filosófica en la modernidad?",
+                options: [
+                    { text: "Es una búsqueda de verdades universales y trascendentales.", isCorrect: false, feedback: "Incorrecto. Foucault se distancia de la búsqueda de estructuras formales universales." },
+                    { text: "Es un análisis de los límites históricos que nos han constituido como sujetos, buscando la posibilidad de superarlos.", isCorrect: true, feedback: "¡Correcto! Foucault la describe como una 'actitud-límite' y una 'ontología histórica de nosotros mismos'." },
+                    { text: "Es un rechazo total de la razón y la racionalidad.", isCorrect: false, feedback: "Incorrecto. Foucault no rechaza la razón, sino que la somete a una crítica genealógica." },
+                    { text: "Es una teoría acumulativa de conocimiento que se mantiene constante a lo largo del tiempo.", isCorrect: false, feedback: "Incorrecto. Foucault la ve como una actitud, no un cuerpo de saber estático." }
+                ],
+                textReference: "Foucault, '¿Qué es la Ilustración?', página 7: 'Esta crítica es genealógica en la medida en que no deduce de la forma de lo que somos lo que nos es imposible hacer o conocer; sino que separa de la contingencia que nos ha hecho ser lo que somos la posibilidad de no ser más, hacer o pensar eso que somos, hacemos o pensamos.'"
+            },
+            {
+                type: 'scenario',
+                scenario: "Un historiador argumenta que el Renacimiento fue simplemente un redescubrimiento de la antigüedad clásica. ¿Cómo refutarías esta idea, basándote en el texto de Restrepo, para enfatizar su originalidad?",
+                options: [
+                    { text: "Aceptar su punto, ya que el Renacimiento solo copió el arte griego y romano.", isCorrect: false, feedback: "Incorrecto. El Renacimiento fue más que una copia, fue una reinterpretación y una nueva creación." },
+                    { text: "Destacar que el Renacimiento, aunque revivió lo clásico, se centró en una nueva imagen del hombre como artífice de sí mismo, algo distinto a la Edad Media.", isCorrect: true, feedback: "¡Correcto! El Renacimiento no solo redescubrió, sino que puso al hombre en el centro de una manera nueva, como 'artífice de sí mismo'." },
+                    { text: "Argumentar que el Renacimiento no tuvo ninguna relación con la antigüedad clásica.", isCorrect: false, feedback: "Incorrecto. El Renacimiento sí tuvo una fuerte conexión con la antigüedad clásica." },
+                    { text: "Señalar que el Renacimiento fue un período de oscuridad cultural, sin logros significativos.", isCorrect: false, feedback: "Incorrecto. El Renacimiento fue una época de gran florecimiento cultural." }
+                ],
+                textReference: "Restrepo, 'Renacimientos y Humanismos', página 3: 'De hecho el mundo teocéntrico de la edad media... dio paso a una historia antropocéntrica, deslumbra por los prodigios de la condición humana. Pico della Mirandola saludaba al hombre artífice de sí mismo y con capacidad de esculpirse en la forma que prefiera: 'nada más admirable que el hombre, grande es milagro es el hombre... podrá degenerar en las cosas inferiores que son los brutos; podrá regenerarse según decreto de su espíritu', clamaba en su oración hacer de la dignidad del hombre.'"
+            },
+            {
+                type: 'quiz',
+                question: "¿Qué paradoja identifica Kant en el curso de las cosas humanas respecto a la libertad ciudadana y la libertad espiritual?",
+                options: [
+                    { text: "Un grado mayor de libertad ciudadana siempre beneficia directamente la libertad espiritual.", isCorrect: false, feedback: "Incorrecto. Kant presenta una paradoja, no una relación directa." },
+                    { text: "Un grado menor de libertad ciudadana siempre beneficia la libertad espiritual.", isCorrect: false, feedback: "Incorrecto. No es una relación simple de 'siempre'." },
+                    { text: "Un grado mayor de libertad ciudadana parece beneficiar la libertad espiritual pero le fija límites, mientras que un grado menor le procura el ámbito necesario para desenvolverse.", isCorrect: true, feedback: "¡Correcto! Kant observa esta aparente contradicción en el desarrollo de la libertad." },
+                    { text: "La libertad ciudadana y la libertad espiritual son conceptos completamente independientes.", isCorrect: false, feedback: "Incorrecto. Kant muestra que están interrelacionadas, aunque paradójicamente." }
+                ],
+                textReference: "Kant, '¿Qué es la Ilustración?', página 6: 'Un grado mayor de libertad ciudadana parece que beneficiaría la libertad espiritual del pueblo pero le fija, al mismo tiempo, límites infranqueables; mientras que un grado menor le procura el ámbito necesario para que pueda desenvolverse con arreglo a todas sus facultades.'"
+            },
+            {
+                type: 'scenario',
+                scenario: "Un estudiante te pregunta si la humanidad ya ha alcanzado la 'mayoría de edad' que Kant describe. ¿Cómo le responderías, basándote en la perspectiva de Kant en el texto?",
+                options: [
+                    { text: "Sí, la humanidad ya es completamente ilustrada y capaz de usar su razón sin guía.", isCorrect: false, feedback: "Incorrecto. Kant es cauteloso y señala que aún falta mucho." },
+                    { text: "No, aún falta mucho para que la humanidad en conjunto se sirva con seguridad y provecho de su propia razón, pero vivimos en una 'época de ilustración'.", isCorrect: true, feedback: "¡Correcto! Kant distingue entre una 'época ilustrada' y una 'época de ilustración', indicando que estamos en proceso." },
+                    { text: "La Ilustración fue un evento pasado y ya no es relevante para la humanidad actual.", isCorrect: false, feedback: "Incorrecto. Kant ve la Ilustración como un proceso continuo." },
+                    { text: "La humanidad nunca podrá alcanzar la mayoría de edad debido a la pereza inherente.", isCorrect: false, feedback: "Incorrecto. Aunque la pereza es un obstáculo, Kant cree en la posibilidad de progreso." }
+                ],
+                textReference: "Kant, '¿Qué es la Ilustración?', página 5: 'Si ahora nos preguntamos: ¿es que vivimos en una época ilustrada? La respuesta será: no, pero sí una época de ilustración. Falta todavía mucho para que, tal como están las cosas y considerados los hombres en conjunto, se hallen en situación, ni tan siquiera en disposición de servirse con seguridad y provecho de su propia razón en materia de religión. Pero ahora es cuando se les ha abierto el campo para trabajar libremente en este empeño, y percibimos inequívocas señales de que van disminuyendo poco a poco los obstáculos a la ilustración general o superación, por los hombres, de su merecida tutela.'"
+            },
+            {
+                type: 'quiz',
+                question: "¿Cómo caracteriza Baudelaire la 'actitud moderna' según Foucault?",
+                options: [
+                    { text: "Como la aceptación pasiva de lo transitorio y fugitivo.", isCorrect: false, feedback: "Incorrecto. Baudelaire va más allá de la simple aceptación." },
+                    { text: "Como la voluntad de 'heroizar' el presente, captando lo eterno en lo transitorio y transformando la realidad.", isCorrect: true, feedback: "¡Correcto! La modernidad para Baudelaire es un ejercicio activo de libertad y transfiguración del presente." },
+                    { text: "Como un desprecio por el presente y una búsqueda de la belleza en el pasado.", isCorrect: false, feedback: "Incorrecto. Baudelaire dice: 'No tenéis el derecho de despreciar el presente'." },
+                    { text: "Como una actitud puramente contemplativa y de colección de curiosidades.", isCorrect: false, feedback: "Incorrecto. Baudelaire opone al 'contemplador' al 'hombre moderno'." }
+                ],
+                textReference: "Foucault, '¿Qué es la Ilustración?', página 4: 'La modernidad no es un acto de sensibilidad ante un presente fugitivo, es la voluntad de 'heroizar' el presente.' y página 5: 'La modernidad baudelaireana es un ejercicio en el que la extrema atención a lo real es confrontada con la práctica de una libertad que al mismo tiempo respeta y viola lo real.'"
+            },
+            {
+                type: 'scenario',
+                scenario: "Un compañero de clase está abrumado por la idea de que somos 'seres históricamente determinados'. Usando la perspectiva de Foucault, ¿cómo le explicarías que esto no significa una limitación absoluta, sino una oportunidad?",
+                options: [
+                    { text: "Que no hay forma de escapar a las determinaciones históricas y debemos resignarnos.", isCorrect: false, feedback: "Incorrecto. Foucault busca la 'posible superación' de los límites." },
+                    { text: "Que el análisis histórico de nuestros límites nos permite identificar lo contingente y arbitrario, abriendo la posibilidad de no ser, hacer o pensar lo que somos.", isCorrect: true, feedback: "¡Correcto! La crítica genealógica de Foucault busca liberar posibilidades de la contingencia histórica." },
+                    { text: "Que la historia es irrelevante para nuestra constitución como sujetos.", isCorrect: false, feedback: "Incorrecto. Foucault enfatiza la importancia de la historia en nuestra constitución." },
+                    { text: "Que solo un cambio global y radical puede liberarnos de estas determinaciones.", isCorrect: false, feedback: "Incorrecto. Foucault prefiere transformaciones precisas y locales." }
+                ],
+                textReference: "Foucault, '¿Qué es la Ilustración?', página 7: 'Y esta crítica es genealógica en la medida en que no deduce de la forma de lo que somos lo que nos es imposible hacer o conocer; sino que separa de la contingencia que nos ha hecho ser lo que somos la posibilidad de no ser más, hacer o pensar eso que somos, hacemos o pensamos.'"
+            },
+            {
+                type: 'quiz',
+                question: "Según Restrepo, ¿cuál es la 'gran tarea' que la humanidad ha acometido con el humanismo?",
+                options: [
+                    { text: "Conquistar el mundo y acumular riquezas.", isCorrect: false, feedback: "Incorrecto. Aunque algunos movimientos históricos buscaron esto, no es la 'gran tarea' humanista." },
+                    { text: "Encontrar el 'posible' de cada ser humano, su piedra perfecta o imagen ideal de excelencia.", isCorrect: true, feedback: "¡Correcto! Restrepo compara esta búsqueda con la del esmeraldero y Miguel Ángel." },
+                    { text: "Establecer un sistema político perfecto que elimine todo conflicto.", isCorrect: false, feedback: "Incorrecto. El humanismo se enfoca en el desarrollo individual." },
+                    { text: "Regresar a las tradiciones y valores de la Edad Media.", isCorrect: false, feedback: "Incorrecto. El humanismo, especialmente el renacentista, marcó una ruptura con la Edad Media." }
+                ],
+                textReference: "Restrepo, 'Renacimientos y Humanismos', página 10: 'Es la gran tarea que ha acometido la humanidad con diversa fortuna: encontrar el posible de cada ser humano con ayuda de una guía que es la visión ética de la excelencia humana.'"
+            },
+            {
+                type: 'scenario',
+                scenario: "Un amigo te dice que se siente 'acabado' y que ya no puede aprender ni cambiar. ¿Cómo le animarías, utilizando la idea del 'renacer' en el humanismo ético de Restrepo?",
+                options: [
+                    { text: "Aceptar su perspectiva, ya que algunas personas simplemente no pueden cambiar.", isCorrect: false, feedback: "Incorrecto. El humanismo ético de Restrepo enfatiza la capacidad de transformación." },
+                    { text: "Recordarle que 'el hombre no nace para morir sino para renacer', y que la vida es una obra inacabada en constante recreación y auto-construcción.", isCorrect: true, feedback: "¡Correcto! La idea del 'renacer' implica una capacidad continua de hacerse a sí mismo." },
+                    { text: "Sugerirle que busque un nuevo pasatiempo para distraerse de su estancamiento.", isCorrect: false, feedback: "Incorrecto. Esto no aborda la raíz filosófica de la idea de 'ser acabado'." },
+                    { text: "Decirle que solo los jóvenes pueden cambiar y aprender cosas nuevas.", isCorrect: false, feedback: "Incorrecto. La idea del 'renacer' es aplicable a cualquier etapa de la vida." }
+                ],
+                textReference: "Restrepo, 'Renacimientos y Humanismos', página 9: 'Agregaré a las anteriores, y como joya final de este humanismo ético, la idea consignada por Ana Arendt cuando escribió que 'el hombre no nace para morir sino para renacer'.'"
+            },
+            {
+                type: 'quiz',
+                question: "Según Kant, ¿qué tipo de revolución no logra la verdadera reforma de la manera de pensar, y qué se necesita para ello?",
+                options: [
+                    { text: "Una revolución política que derroque el despotismo, pero no la reforma del pensamiento; para esto se necesita la libertad de uso público de la razón.", isCorrect: true, feedback: "¡Correcto! Kant argumenta que las revoluciones políticas no garantizan la verdadera ilustración del pensamiento." },
+                    { text: "Una revolución religiosa que cambie los dogmas, pero no la reforma del pensamiento; para esto se necesita la obediencia estricta.", isCorrect: false, feedback: "Incorrecto. La obediencia estricta no conduce a la reforma del pensamiento según Kant." },
+                    { text: "Una revolución económica que mejore las condiciones materiales, pero no la reforma del pensamiento; para esto se necesita la guía de tutores.", isCorrect: false, feedback: "Incorrecto. La guía de tutores es lo que la Ilustración busca superar." },
+                    { text: "Cualquier tipo de revolución es suficiente para reformar la manera de pensar.", isCorrect: false, feedback: "Incorrecto. Kant es claro en que las revoluciones por sí solas no logran esto." }
+                ],
+                textReference: "Kant, '¿Qué es la Ilustración?', página 2: 'Mediante una revolución acaso se logre derrocar el despotismo personal y acabar con la opresión económica o política, pero nunca se consigue la verdadera reforma de la manera de pensar; sino que, nuevos prejuicios, en lugar de los antiguos, servirán de riendas para conducir al gran tropel. Para esta ilustración no se requiere más que una cosa, libertad; y la más inocente entre todas las que llevan ese nombre, a saber: libertad de hacer uso público de su razón íntegramente.'"
+            },
+            {
+                type: 'scenario',
+                scenario: "En un proyecto grupal, un compañero insiste en seguir un método rígido porque 'siempre se ha hecho así'. ¿Cómo aplicarías el concepto de 'actitud-límite' de Foucault para abordar esta situación?",
+                options: [
+                    { text: "Aceptar el método sin cuestionar, para evitar conflictos.", isCorrect: false, feedback: "Incorrecto. La actitud-límite implica un análisis crítico." },
+                    { text: "Rechazar completamente el método sin ofrecer alternativas.", isCorrect: false, feedback: "Incorrecto. No se trata de un comportamiento de rechazo, sino de estar 'en las fronteras'." },
+                    { text: "Analizar históricamente por qué ese método se ha vuelto 'necesario', identificar sus límites contingentes y proponer una forma de superación posible o una alternativa experimental.", isCorrect: true, feedback: "¡Correcto! La actitud-límite busca transformar la crítica de limitación necesaria en logro posible." },
+                    { text: "Buscar una solución global para todos los proyectos, no solo este.", isCorrect: false, feedback: "Incorrecto. Foucault prefiere transformaciones precisas y locales." }
+                ],
+                textReference: "Foucault, '¿Qué es la Ilustración?', página 7: 'Se trata, en suma, de transformar la crítica ejercida en forma de la limitación necesaria, en una crítica práctica en forma del logro posible.'"
+            },
+            {
+                type: 'quiz',
+                question: "¿Cuál es la relación entre la ética y el humanismo según Javier Darío Restrepo?",
+                options: [
+                    { text: "Son conceptos completamente separados sin interrelación.", isCorrect: false, feedback: "Incorrecto. Restrepo enfatiza su estrecha interrelación." },
+                    { text: "La ética es un saber profundo sobre el ser humano que se ha acumulado a partir de la experiencia, y está en el corazón del humanismo, mostrando las posibilidades del hombre.", isCorrect: true, feedback: "¡Correcto! Para Restrepo, la ética y el humanismo se enriquecen mutuamente, revelando el potencial humano." },
+                    { text: "El humanismo es solo una teoría abstracta, mientras que la ética es puramente práctica.", isCorrect: false, feedback: "Incorrecto. Ambos tienen dimensiones teóricas y prácticas." },
+                    { text: "La ética limita las posibilidades del ser humano, mientras que el humanismo las expande.", isCorrect: false, feedback: "Incorrecto. La ética, en esta visión, revela y guía las posibilidades." }
+                ],
+                textReference: "Restrepo, 'Renacimientos y Humanismos', página 6: 'Hay una interrelación tan estrecha entre ética y humanismo, que para los filósofos y humanistas hablar de humanismo y reflexionar sobre ética, hace parte del mismo ejercicio intelectual.' y página 7: 'lo ético está en el corazón del humanismo, tanto como éste se halla en el de la ética'."
+            },
+            {
+                type: 'scenario',
+                scenario: "Un debate en clase gira en torno a si el hombre es inherentemente bueno o malo. Basándote en la perspectiva del humanismo de Restrepo, ¿cómo contribuirías a la discusión sobre la naturaleza humana?",
+                options: [
+                    { text: "Afirmar que el hombre es puramente bueno y no tiene capacidad para el mal.", isCorrect: false, feedback: "Incorrecto. El humanismo reconoce la dualidad de la naturaleza humana." },
+                    { text: "Señalar que el hombre es un ser de 'doble rostro', con la posibilidad de humanizarse o deshumanizarse, y que su libertad le permite elegir entre el bien y el mal.", isCorrect: true, feedback: "¡Correcto! Restrepo alude a esta dualidad y a la libertad como clave." },
+                    { text: "Argumentar que la naturaleza humana es fija e inmutable desde el nacimiento.", isCorrect: false, feedback: "Incorrecto. El humanismo enfatiza la construcción del ser humano." },
+                    { text: "Decir que el hombre está predestinado y no tiene control sobre su moralidad.", isCorrect: false, feedback: "Incorrecto. La libertad y la responsabilidad son centrales en el humanismo." }
+                ],
+                textReference: "Restrepo, 'Renacimientos y Humanismos', página 7: 'Mencionaba antes la idea del hombre como ser posible. Es el ser de doble rostro que nuestros escultores precolombinos tallaron en sus monolitos, o el que inspira la exclamación de Sófocles en Antífona: 'lo más maravilloso y terrible que hay en el mundo es el hombre, de su arte y de su ingenio surgen el bien y el mal'.'"
+            },
+            {
+                type: 'quiz',
+                question: "¿Qué significa la frase de Kant 'Caesar non est supra grammaticos' en el contexto de la libertad de pensamiento?",
+                options: [
+                    { text: "El emperador no debe preocuparse por la gramática.", isCorrect: false, feedback: "Incorrecto. Es una metáfora sobre la autoridad." },
+                    { text: "El gobernante no debe imponer su opinión en asuntos de conciencia o conocimiento, ya que su autoridad no se extiende a la verdad o la razón.", isCorrect: true, feedback: "¡Correcto! Significa que ni siquiera el soberano está por encima de la razón y la crítica." },
+                    { text: "Los gramáticos tienen más poder que el César.", isCorrect: false, feedback: "Incorrecto. No se trata de poder político directo." },
+                    { text: "El conocimiento es irrelevante para el gobierno.", isCorrect: false, feedback: "Incorrecto. Implica que el conocimiento y la razón tienen su propia autoridad." }
+                ],
+                textReference: "Kant, '¿Qué es la Ilustración?', página 5: 'Y hará agravio a la majestad de su persona si en ello se mezcla hasta el punto de someter a su inspección gubernamental aquellos escritos en los que sus súbditos tratan de decantar sus creencias, ya sea porque estime su propia opinión como la mejor, en cuyo caso se expone al reproche: Caesar non est supra grammaticos...'"
+            },
+            {
+                type: 'scenario',
+                scenario: "Un grupo de amigos está discutiendo sobre el futuro de la humanidad. Algunos son muy pesimistas, creyendo que la sociedad está en declive. Basándote en la noción de 'utopía' en el humanismo de Restrepo, ¿cómo podrías ofrecer una perspectiva más esperanzadora?",
+                options: [
+                    { text: "Aceptar el pesimismo, ya que la utopía es un concepto irrealizable.", isCorrect: false, feedback: "Incorrecto. Restrepo ve la utopía como un motor de crecimiento." },
+                    { text: "Argumentar que la utopía, aunque sea un 'lugar que no existe', es un motor de insatisfacción permanente que impulsa al hombre a ir más allá de lo real y buscar su crecimiento sin fin.", isCorrect: true, feedback: "¡Correcto! La utopía, para Restrepo, es una subversión contra la realidad que impulsa el mejoramiento continuo." },
+                    { text: "Decir que el futuro está predestinado y no hay nada que se pueda hacer.", isCorrect: false, feedback: "Incorrecto. La utopía implica la acción y la creación." },
+                    { text: "Ignorar la discusión, ya que la filosofía no tiene soluciones para el futuro.", isCorrect: false, feedback: "Incorrecto. La filosofía, en este contexto, ofrece marcos para pensar el futuro." }
+                ],
+                textReference: "Restrepo, 'Renacimientos y Humanismos', página 8: 'La utopía se presenta bajo la forma de mito... y siempre que en el horizonte humano destelló esa estrella, la humanidad saludó como un triunfo la aparición de alguien cercano a la utopía del humano perfecto.'"
+            },
+            {
+                type: 'quiz',
+                question: "¿Cuál es el 'chantaje' a la Ilustración que Foucault advierte que debemos rechazar?",
+                options: [
+                    { text: "La exigencia de elegir entre la fe y la razón.", isCorrect: false, feedback: "Incorrecto. Aunque es un tema relacionado, no es el 'chantaje' principal que Foucault menciona." },
+                    { text: "La alternativa simplista y autoritaria de estar 'a favor' o 'en contra' de la Ilustración, sin un análisis crítico de sus límites y posibilidades.", isCorrect: true, feedback: "¡Correcto! Foucault insta a una crítica matizada, no a una toma de posición binaria." },
+                    { text: "La idea de que la Ilustración es la única vía para el progreso humano.", isCorrect: false, feedback: "Incorrecto. Foucault no se opone al progreso, sino a la forma de abordarlo." },
+                    { text: "La creencia de que la Ilustración es un fenómeno puramente europeo sin relevancia global.", isCorrect: false, feedback: "Incorrecto. Foucault se centra en la actitud filosófica, no en la geografía." }
+                ],
+                textReference: "Foucault, '¿Qué es la Ilustración?', página 6: 'Este ethos implica, en primer lugar, que se rechace eso que yo llamaría el 'chantaje' a la Aufklärung. Pienso que la Aufklärung... ha formulado una pregunta filosófica que permanece planteada. Pienso, en fin -he intentado mostrarlo a propósito del texto de Kant-, que ha definido una cierta manera de filosofar. Pero esto no quiere decir que se deba estar 'por' o 'contra' la Aufklärung. Esto quiere decir, precisamente, que debemos rehusar todo aquello que se presente bajo la forma de una alternativa simplista y autoritaria...'"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answeredCorrectly = false; // Variable para controlar si la pregunta actual ya fue respondida correctamente
+
+        const introScreen = document.getElementById('introScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const endScreen = document.getElementById('endScreen');
+        const startButton = document.getElementById('startButton');
+        const questionText = document.getElementById('questionText');
+        const scenarioDescription = document.getElementById('scenarioDescription');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const feedbackArea = document.getElementById('feedbackArea');
+        const nextButton = document.getElementById('nextButton');
+        const scoreArea = document.getElementById('scoreArea');
+        const finalScoreText = document.getElementById('finalScoreText');
+        const finalMessage = document.getElementById('finalMessage');
+        const restartButton = document.getElementById('restartButton');
+
+        // Event listener para iniciar el juego
+        startButton.addEventListener('click', startGame);
+        // Event listener para la siguiente pregunta
+        nextButton.addEventListener('click', loadNextQuestion);
+        // Event listener para reiniciar el juego
+        restartButton.addEventListener('click', restartGame);
+
+        function startGame() {
+            introScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            currentQuestionIndex = 0;
+            score = 0;
+            updateScore();
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            // Reiniciar estado para la nueva pregunta
+            answeredCorrectly = false;
+            feedbackArea.classList.add('hidden');
+            feedbackArea.className = 'feedback-area hidden'; // Limpiar clases de feedback
+            nextButton.classList.add('hidden');
+            optionsContainer.innerHTML = ''; // Limpiar opciones anteriores
+
+            if (currentQuestionIndex < gameData.length) {
+                const currentItem = gameData[currentQuestionIndex];
+                questionText.innerText = currentItem.question;
+                // Aplicar animación de fade-in a la pregunta
+                questionText.classList.remove('fade-in'); // Reset animation
+                void questionText.offsetWidth; // Trigger reflow
+                questionText.classList.add('fade-in');
+
+
+                // Mostrar descripción del escenario si es un tipo 'scenario'
+                if (currentItem.type === 'scenario') {
+                    scenarioDescription.innerText = currentItem.scenario;
+                    scenarioDescription.classList.remove('hidden');
+                } else {
+                    scenarioDescription.innerText = '';
+                    scenarioDescription.classList.add('hidden');
+                }
+
+                currentItem.options.forEach((option, index) => {
+                    const button = document.createElement('button');
+                    button.classList.add('option-button');
+                    button.innerText = option.text;
+                    button.dataset.index = index;
+                    button.addEventListener('click', () => checkAnswer(option, button));
+                    optionsContainer.appendChild(button);
+                });
+            } else {
+                endGame();
+            }
+        }
+
+        function checkAnswer(selectedOption, button) {
+            // Si la pregunta ya fue respondida correctamente, no hacer nada
+            if (answeredCorrectly) {
+                return;
+            }
+
+            // Deshabilitar todos los botones de opción para evitar múltiples clics
+            Array.from(optionsContainer.children).forEach(btn => {
+                btn.disabled = true;
+                if (btn !== button) {
+                    btn.style.opacity = '0.7'; // Atenuar opciones no seleccionadas
+                }
+            });
+
+            feedbackArea.classList.remove('hidden');
+
+            if (selectedOption.isCorrect) {
+                button.classList.add('correct');
+                feedbackArea.classList.add('feedback-correct');
+                feedbackArea.innerText = `¡Respuesta Correcta! ${selectedOption.feedback || ''}\n\nReferencia: ${gameData[currentQuestionIndex].textReference}`;
+                score += 10; // Sumar puntos por respuesta correcta
+                answeredCorrectly = true; // Marcar como respondida correctamente
+            } else {
+                button.classList.add('wrong');
+                feedbackArea.classList.add('feedback-wrong');
+                feedbackArea.innerText = `Incorrecto. ${selectedOption.feedback || ''}\n\nReferencia: ${gameData[currentQuestionIndex].textReference}`;
+                // Mostrar la respuesta correcta
+                const correctOption = gameData[currentQuestionIndex].options.find(opt => opt.isCorrect);
+                if (correctOption) {
+                    Array.from(optionsContainer.children).find(btn => btn.innerText === correctOption.text).classList.add('correct');
+                }
+            }
+            updateScore();
+            nextButton.classList.remove('hidden');
+        }
+
+        function loadNextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function updateScore() {
+            scoreArea.innerText = `Puntuación: ${score}`;
+        }
+
+        function endGame() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            finalScoreText.innerText = `Tu puntuación final es: ${score} de ${gameData.length * 10} puntos.`;
+
+            let message = "";
+            if (score === gameData.length * 10) {
+                message = "¡Felicidades! Has demostrado una comprensión excepcional de los textos. ¡Eres un maestro de la Ilustración y el Humanismo!";
+            } else if (score >= (gameData.length * 10) / 2) {
+                message = "¡Buen trabajo! Has respondido a la mayoría de las preguntas correctamente. Sigue explorando estos fascinantes conceptos.";
+            } else {
+                message = "Has completado el desafío. Te animamos a revisar los textos para fortalecer tu conocimiento y volver a intentarlo.";
+            }
+            finalMessage.innerText = message;
+        }
+
+        function restartGame() {
+            endScreen.classList.add('hidden');
+            introScreen.classList.remove('hidden'); // Volver a la pantalla de inicio
+            currentQuestionIndex = 0;
+            score = 0;
+            updateScore();
+            // Limpiar el estado de la última pregunta al reiniciar
+            answeredCorrectly = false;
+            feedbackArea.classList.add('hidden');
+            feedbackArea.className = 'feedback-area hidden';
+            nextButton.classList.add('hidden');
+            optionsContainer.innerHTML = '';
+            scenarioDescription.innerText = '';
+            scenarioDescription.classList.add('hidden');
+        }
+
+        // Inicializar el juego al cargar la página (mostrar pantalla de introducción)
+        document.addEventListener('DOMContentLoaded', () => {
+            introScreen.classList.remove('hidden');
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+        });
+    </script>
+</body>
+</html>
